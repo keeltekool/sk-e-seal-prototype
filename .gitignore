@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.production
+*.p12
+*.pfx
+*.pem
+*.key
+dist/
+.vercel
