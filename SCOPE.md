@@ -1,4 +1,4 @@
-# SK E-Seal Prototype — Project Scope
+# Qualified E-Seal by SK ID — Project Scope
 
 > **Status:** Pre-build (research complete, design validated)
 > **Created:** 2026-03-24
@@ -51,18 +51,26 @@ VERIFICATION:
 
 ### Phase 1: Prove the Loop (MVP)
 
-**Goal:** One hardcoded test credential, CSC v2 endpoints that sign, client SDK that seals a PDF.
+**Goal:** Working CSC v2 e-sealing service with separate client SDK, landing page, and live demo.
 
 | Component | What | Tech |
 |---|---|---|
 | CSC v2 API Server | 6 core endpoints (info, oauth2/token, credentials/list, credentials/info, credentials/authorize, signatures/signHash) | Next.js API routes |
-| Software Key Store | One test RSA keypair + self-signed certificate, encrypted at rest | Neon DB or in-memory |
+| Software Key Store | One self-signed test certificate, generated at first startup. Designed so a real SK cert (.p12) can be dropped in later with zero code changes. | Neon DB |
 | OAuth 2.0 | Client Credentials flow (reuse Alkoholiks API pattern) | Same as alkoholiks-api |
-| SCAL2 Flow | credentials/authorize with PIN → SAD token → signHash with SAD | JWT-based SAD |
-| Client SDK | TypeScript library: loadPDF → computeHash → callAPI → embedSeal → outputPDF | pdf-lib + @signpdf + node-forge |
-| Demo Script | CLI that takes a PDF, seals it, outputs sealed PDF | Node.js CLI |
+| SCAL2 Flow | credentials/authorize with per-tenant configurable PIN (hashed) → SAD token → signHash with SAD | JWT-based SAD |
+| Client SDK | **Separate package** (`/packages/client-sdk/`) with own package.json, tests, README. Structured as if shipping to npm. | pdf-lib + @signpdf + node-forge |
+| PAdES Level | B-T from the start — includes RFC 3161 timestamp. No signature without time proof. | FreeTSA.org |
+| Landing Page | SK-style marketing site presenting the service as the real initiative envisions it. Value prop, how it works, use cases, pricing, compliance, developer experience. **⚠️ STOP and ask user for SK branding/styling guidance before building.** | Next.js + Tailwind |
+| Live Demo | Embedded in landing page — upload PDF, get sealed PDF back. The marketing site and working demo are one integrated experience. | Connected to real API |
+| CLI Demo | Developer-facing CLI for testing: `node seal-demo.js invoice.pdf` → sealed PDF | Node.js CLI |
+| Documentation | Inline comments linking to CSC spec sections. `docs/architecture.md`, `docs/csc-v2-mapping.md`, developer guides. OpenAPI spec with Swagger UI at `/docs`. Educational reference quality throughout. | Markdown + OpenAPI 3.1 |
 
-**Phase 1 Definition of Done:** Run `node seal-demo.js invoice.pdf` → get `invoice-sealed.pdf` → open in Adobe → see valid signature with test certificate.
+**Phase 1 Definition of Done:**
+1. Run `node seal-demo.js invoice.pdf` → get `invoice-sealed.pdf` → open in Adobe → see valid signature with test certificate
+2. Visit landing page → understand the service as a customer would → upload a PDF → download sealed PDF
+3. Every CSC v2 endpoint documented with spec section references
+4. Client SDK installable and usable independently
 
 ### Phase 2: Make It Real
 
@@ -75,14 +83,14 @@ VERIFICATION:
 | OpenAPI spec | Full Swagger UI documentation |
 | Batch sealing | Multiple hashes per signHash call |
 
-### Phase 3: Polish
+### Phase 3: Scale & Harden
 
 | Component | What |
 |---|---|
-| Developer portal | Landing page, docs, dashboard (reuse Alkoholiks API patterns) |
 | Rate limiting | Upstash Redis (same as alkoholiks-api) |
-| Audit logging | Per-seal audit trail |
-| PAdES-B-T/LT | Timestamp embedding in CMS, validation data |
+| Audit logging | Per-seal audit trail with full traceability |
+| PAdES-B-LT | Long-term validation data embedded in signatures |
+| SDK distribution | Publish client SDK to npm |
 
 ## 5. CSC v2 API Endpoints (MVP Scope)
 
@@ -131,7 +139,7 @@ When signing for PAdES, you don't send the raw PDF hash to signHash. The flow is
 (Documented in node-signpdf issue #46)
 
 ### SCAL2 (per Raul's regulatory feedback)
-The SCAL1 vs SCAL2 debate is settled: SCAL2 is required for qualified level. For the prototype this means implementing `credentials/authorize` with a static PIN that returns a SAD token. The PIN is stored in the client's system — no human enters it. Full M2M remains possible.
+The SCAL1 vs SCAL2 debate is settled: SCAL2 is required for qualified level. The prototype implements `credentials/authorize` with a per-tenant configurable PIN (stored hashed in DB) that returns a SAD token. The PIN is stored in the client's system — no human enters it. Full M2M remains possible.
 
 ### Certificate swappability
 The credential store is designed so any certificate + key pair can be plugged in:
@@ -195,6 +203,18 @@ Cross-checked against the full market validation documents (`G:\My Drive\SK_RE\R
 | CSC v2.0 Spec (PDF) | `https://cloudsignatureconsortium.org/wp-content/uploads/2023/04/csc-api-v2.0.0.2.pdf` | 100-page spec, all endpoints, e-seal auth (Section 8.5) |
 | Alkoholiks API Design | `C:\Users\Kasutaja\Claude_Projects\alkoholiks-api\docs\plans\2026-03-21-alkoholiks-api-design.md` | OAuth, OpenAPI, SDK patterns to reuse |
 
+## 12. Design Philosophy
+
+**No corners cut.** Every architectural decision is made so the prototype can evolve toward the real SK production service through incremental upgrades — not rewrites. Swapping in a real SK certificate, connecting to a real HSM, adding real CA infrastructure — each should be a config/integration change, not a rebuild.
+
+This is both a **learning vehicle** and a **reference implementation**. Code quality, documentation, and structure must be at a level where SK colleagues can study it as a blueprint for the real service.
+
+## 13. Landing Page — SK Branding Gate
+
+The landing page presents the Remote Qualified E-Seal Service as SK would market it to customers. It must use SK-appropriate branding and styling.
+
+**⚠️ MANDATORY STOP:** Before building the landing page, STOP and ask the user for SK branding/styling guidance. Do NOT proceed with generic styling or guessed SK brand colors. Wait for explicit direction.
+
 ---
 
-*Next session: Write PRD, get approval, then build Phase 1.*
+*Next step: Write PRD, get approval, then build Phase 1.*
