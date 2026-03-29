@@ -1,0 +1,12 @@
+{
+  "name": "@sk-eseal/client-sdk",
+  "version": "0.1.0",
+  "description": "Client SDK for Qualified E-Seal by SK ID — CSC v2 compliant remote e-sealing",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "license": "MIT"
+}

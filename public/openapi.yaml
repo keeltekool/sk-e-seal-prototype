@@ -1,0 +1,434 @@
+openapi: 3.1.0
+info:
+  title: Qualified E-Seal by SK ID
+  version: 1.0.0
+  description: |
+    CSC v2 compliant remote e-sealing service prototype by SK ID Solutions.
+
+    This API implements the Cloud Signature Consortium (CSC) API v2.0.0.2 specification
+    for remote electronic sealing. Documents never touch the server — clients compute
+    SHA-256 hashes locally and send only the 32-byte hash for signing.
+
+    **Authentication flow:**
+    1. `POST /oauth2/token` — obtain access token (Client Credentials)
+    2. `POST /csc/v2/credentials/authorize` — exchange PIN + hashes for a SAD token (SCAL2)
+    3. `POST /csc/v2/signatures/signHash` — sign hashes using the SAD token
+
+    **Spec reference:** [CSC API v2.0.0.2](https://cloudsignatureconsortium.org/wp-content/uploads/2023/04/csc-api-v2.0.0.2.pdf)
+  contact:
+    name: SK ID Solutions
+    url: https://www.skidsolutions.eu
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+paths:
+  /oauth2/token:
+    post:
+      summary: Obtain access token
+      description: |
+        OAuth 2.0 Client Credentials flow (RFC 6749 §4.4).
+        Returns a Bearer token for authenticating CSC v2 API calls.
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grant_type, client_id, client_secret]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                client_id:
+                  type: string
+                  example: demo-tenant-001
+                client_secret:
+                  type: string
+                  example: your-client-secret
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant_type, client_id, client_secret]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+      responses:
+        '200':
+          description: Access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token
+                  token_type:
+                    type: string
+                    enum: [Bearer]
+                  expires_in:
+                    type: integer
+                    description: Token lifetime in seconds
+                    example: 3600
+        '400':
+          description: Invalid grant_type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /api/csc/v2/info:
+    post:
+      summary: Service information
+      description: |
+        CSC v2 Spec §11.1 — Returns service metadata including capabilities,
+        supported algorithms, and authentication types.
+        **Does not require authentication.**
+      tags: [CSC v2]
+      responses:
+        '200':
+          description: Service metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  specs:
+                    type: string
+                    example: '2.0.0.2'
+                  name:
+                    type: string
+                    example: Qualified E-Seal by SK ID
+                  logo:
+                    type: string
+                  region:
+                    type: string
+                    example: EE
+                  lang:
+                    type: string
+                    example: en
+                  description:
+                    type: string
+                  authType:
+                    type: array
+                    items:
+                      type: string
+                    example: [oauth2]
+                  oauth2:
+                    type: string
+                    format: uri
+                  methods:
+                    type: array
+                    items:
+                      type: string
+                  signAlgorithms:
+                    $ref: '#/components/schemas/AlgorithmInfo'
+                  hashAlgorithms:
+                    $ref: '#/components/schemas/AlgorithmInfo'
+
+  /api/csc/v2/credentials/list:
+    post:
+      summary: List credentials
+      description: |
+        CSC v2 Spec §11.4 — Returns credential IDs available to the authenticated tenant.
+      tags: [CSC v2 - Credentials]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of credential IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credentialIDs:
+                    type: array
+                    items:
+                      type: string
+                    example: [cred-abc123]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/csc/v2/credentials/info:
+    post:
+      summary: Credential details
+      description: |
+        CSC v2 Spec §11.4 — Returns detailed information about a credential:
+        certificate chain (DER/base64), key algorithm, SCAL level, auth mode.
+      tags: [CSC v2 - Credentials]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credentialID]
+              properties:
+                credentialID:
+                  type: string
+                  description: The credential identifier from credentials/list
+                  example: cred-abc123
+      responses:
+        '200':
+          description: Credential details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                  key:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [enabled, disabled]
+                      algo:
+                        type: array
+                        items:
+                          type: string
+                        description: RSA OID
+                      len:
+                        type: integer
+                        example: 2048
+                  cert:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      certificates:
+                        type: array
+                        items:
+                          type: string
+                        description: DER-encoded certificates in base64
+                      issuerDN:
+                        type: string
+                      subjectDN:
+                        type: string
+                      serialNumber:
+                        type: string
+                      validFrom:
+                        type: string
+                        format: date-time
+                      validTo:
+                        type: string
+                        format: date-time
+                  authMode:
+                    type: string
+                    enum: [explicit]
+                    description: SCAL2 requires explicit authorization
+                  SCAL:
+                    type: string
+                    enum: [SCAL1, SCAL2]
+                  PIN:
+                    type: object
+                    properties:
+                      presence:
+                        type: string
+                      label:
+                        type: string
+                      description:
+                        type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Credential not found
+
+  /api/csc/v2/credentials/authorize:
+    post:
+      summary: Authorize credential (SCAL2)
+      description: |
+        CSC v2 Spec §11.4 — SCAL2 authorization flow.
+        Tenant provides PIN + hash values, receives a single-use SAD (Signature Activation Data) token.
+        The SAD is a JWT bound to the specific hashes and expires after 5 minutes.
+      tags: [CSC v2 - Credentials]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credentialID, PIN, hash]
+              properties:
+                credentialID:
+                  type: string
+                  example: cred-abc123
+                PIN:
+                  type: string
+                  description: Tenant's SCAL2 PIN
+                  example: '12345'
+                hash:
+                  type: array
+                  items:
+                    type: string
+                  description: Base64-encoded hash values to be signed
+                  example: [dGVzdGhhc2g=]
+                hashAlgo:
+                  type: string
+                  default: SHA-256
+                numSignatures:
+                  type: integer
+                  description: Number of signatures to authorize (defaults to hash array length)
+      responses:
+        '200':
+          description: SAD token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  SAD:
+                    type: string
+                    description: Signature Activation Data — single-use JWT
+                  expiresIn:
+                    type: integer
+                    description: SAD lifetime in seconds
+                    example: 300
+        '401':
+          description: Invalid PIN or unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSCError'
+
+  /api/csc/v2/signatures/signHash:
+    post:
+      summary: Sign hash(es)
+      description: |
+        CSC v2 Spec §11.7 — Core signing endpoint.
+        Validates the SAD token, decrypts the credential's private key, and produces
+        PKCS#1 v1.5 RSA signatures with SHA-256 DigestInfo.
+
+        **CRITICAL:** For PAdES, send the hash of DER-encoded SignedAttributes,
+        NOT the raw PDF hash. See SCOPE.md §7 "CMS signing subtlety".
+      tags: [CSC v2 - Signatures]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credentialID, SAD, hash]
+              properties:
+                credentialID:
+                  type: string
+                  example: cred-abc123
+                SAD:
+                  type: string
+                  description: Single-use SAD token from credentials/authorize
+                hash:
+                  type: array
+                  items:
+                    type: string
+                  description: Base64-encoded hash values to sign
+                hashAlgo:
+                  type: string
+                  default: SHA-256
+                signAlgo:
+                  type: string
+                  default: 1.2.840.113549.1.1.11
+      responses:
+        '200':
+          description: Signatures produced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signatures:
+                    type: array
+                    items:
+                      type: string
+                    description: Base64-encoded RSA signatures (one per input hash)
+        '400':
+          description: Invalid or reused SAD
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSCError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: SAD not bound to this credential
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token from POST /oauth2/token
+
+  schemas:
+    OAuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: invalid_client
+        error_description:
+          type: string
+          example: Unknown client_id
+
+    CSCError:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+
+    AlgorithmInfo:
+      type: object
+      properties:
+        algos:
+          type: array
+          items:
+            type: string
+          description: OID values
+        algoParams:
+          type: array
+          items:
+            type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CSCError'
+
+tags:
+  - name: Authentication
+    description: OAuth 2.0 token management
+  - name: CSC v2
+    description: Service-level endpoints
+  - name: CSC v2 - Credentials
+    description: Credential management and SCAL2 authorization
+  - name: CSC v2 - Signatures
+    description: Hash signing operations
