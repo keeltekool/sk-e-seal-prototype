@@ -656,44 +656,19 @@ const result = await client.seal(pdfBytes);
               </a>
             </div>
 
-            {/* SK Initiative Documents */}
-            <h3 className="font-bold text-lg mb-6 font-headline">SK Initiative Documents</h3>
+            {/* Standards */}
+            <h3 className="font-bold text-lg mb-6 font-headline">Standards</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-4">
-                <span className="material-symbols-outlined text-primary">business_center</span>
-                <div>
-                  <h4 className="font-bold font-headline">Business Requirements v3</h4>
-                  <p className="text-sm text-secondary font-body">10 requirements, pricing tiers, success criteria</p>
+              <a href="https://cloudsignatureconsortium.org/wp-content/uploads/2023/04/csc-api-v2.0.0.2.pdf" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary">menu_book</span>
+                  <div>
+                    <h4 className="font-bold font-headline">CSC v2 Specification (PDF)</h4>
+                    <p className="text-sm text-secondary font-body">The 100-page standard this prototype implements</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-4">
-                <span className="material-symbols-outlined text-primary">engineering</span>
-                <div>
-                  <h4 className="font-bold font-headline">Technical Requirements v3</h4>
-                  <p className="text-sm text-secondary font-body">CSC v2 endpoints, SCAL levels, architecture</p>
-                </div>
-              </div>
-              <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-4">
-                <span className="material-symbols-outlined text-primary">account_tree</span>
-                <div>
-                  <h4 className="font-bold font-headline">Initiative Integration Doc</h4>
-                  <p className="text-sm text-secondary font-body">12 deliverables, dependency graph, Go/No-Go criteria</p>
-                </div>
-              </div>
-              <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-4">
-                <span className="material-symbols-outlined text-primary">monitoring</span>
-                <div>
-                  <h4 className="font-bold font-headline">Market Validation Master</h4>
-                  <p className="text-sm text-secondary font-body">Full market analysis, competitor mapping</p>
-                </div>
-              </div>
-              <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-4">
-                <span className="material-symbols-outlined text-primary">menu_book</span>
-                <div>
-                  <h4 className="font-bold font-headline">CSC v2 Specification (PDF)</h4>
-                  <p className="text-sm text-secondary font-body">The 100-page standard this prototype implements</p>
-                </div>
-              </div>
+                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
+              </a>
             </div>
           </div>
         </section>
@@ -730,66 +705,6 @@ const result = await client.seal(pdfBytes);
         </section>
       </main>
 
-      {/* ===== SECTION 13: FOOTER ===== */}
-      <footer className="bg-surface border-t border-outline-variant/10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-8 py-16 max-w-screen-2xl mx-auto font-body text-sm leading-6 text-secondary">
-          {/* Brand & Info */}
-          <div className="space-y-6">
-            <div className="text-xl font-bold text-[#f12f00] brand-logo">
-              SK ID Solutions
-            </div>
-            <p className="max-w-xs">
-              Leading provider of secure digital identity solutions and trust services in the Baltics and beyond.
-            </p>
-            <div className="flex gap-4">
-              <span className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary hover:text-primary transition-colors cursor-pointer">
-                <span className="material-symbols-outlined">share</span>
-              </span>
-              <span className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary hover:text-primary transition-colors cursor-pointer">
-                <span className="material-symbols-outlined">alternate_email</span>
-              </span>
-            </div>
-          </div>
-          {/* Service */}
-          <div>
-            <h5 className="text-on-surface font-bold uppercase tracking-widest text-xs mb-6">Service</h5>
-            <ul className="space-y-4">
-              <li><span className="text-[#f12f00] font-semibold">Remote E-Seal</span></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://www.skidsolutions.eu/en/services/smart-id/" target="_blank" rel="noopener noreferrer">Smart-ID</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://www.skidsolutions.eu/en/services/mobile-id/" target="_blank" rel="noopener noreferrer">Mobile-ID</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://www.skidsolutions.eu/en/services/" target="_blank" rel="noopener noreferrer">Trust Services</a></li>
-            </ul>
-          </div>
-          {/* Developers */}
-          <div>
-            <h5 className="text-on-surface font-bold uppercase tracking-widest text-xs mb-6">Developers</h5>
-            <ul className="space-y-4">
-              <li><a className="hover:text-[#f12f00] transition-colors" href="/docs">API Docs</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://github.com/keeltekool/sk-e-seal-prototype/tree/master/packages/client-sdk" target="_blank" rel="noopener noreferrer">SDK</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/public/openapi.yaml" target="_blank" rel="noopener noreferrer">OpenAPI Spec</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors" href="https://github.com/keeltekool/sk-e-seal-prototype" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-            </ul>
-          </div>
-          {/* Legal */}
-          <div>
-            <h5 className="text-on-surface font-bold uppercase tracking-widest text-xs mb-6">Legal</h5>
-            <ul className="space-y-4">
-              <li><a className="hover:text-[#f12f00] transition-colors underline decoration-2 underline-offset-4" href="#">Privacy Policy</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors underline decoration-2 underline-offset-4" href="#">Terms of Service</a></li>
-              <li><a className="hover:text-[#f12f00] transition-colors underline decoration-2 underline-offset-4" href="#">Security</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-outline-variant/10 py-8 px-8">
-          <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-label">
-            <p>&copy; 2026 SK ID Solutions AS</p>
-            <div className="flex gap-8">
-              <span>EU Trust List</span>
-              <span>ISO/IEC 27001</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </>
   );
 }
