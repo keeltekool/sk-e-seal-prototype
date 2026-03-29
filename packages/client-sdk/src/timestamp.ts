@@ -23,7 +23,7 @@ export async function getTimestamp(
   const response = await fetch(tsaUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/timestamp-query' },
-    body: tsReqDer,
+    body: new Uint8Array(tsReqDer),
   });
 
   if (!response.ok) {
