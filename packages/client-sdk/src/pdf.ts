@@ -10,11 +10,7 @@ import {
 export interface PreparedPdf {
   /** The PDF bytes with signature placeholder inserted */
   preparedPdf: Uint8Array;
-  /**
-   * The actual byte range [offset1, length1, offset2, length2]:
-   * - [0, placeholderPos] = bytes before the Contents hex string
-   * - [placeholderEnd, remainingLength] = bytes after the Contents hex string
-   */
+  /** Actual byte range [0, beforeSig, afterSig, remaining] */
   byteRange: [number, number, number, number];
   /** Byte offset where the Contents hex string starts (including '<') */
   signaturePlaceholderOffset: number;
@@ -25,20 +21,16 @@ export interface PreparedPdf {
 /**
  * Prepares a PDF for digital signing by adding a signature placeholder.
  *
- * This inserts a /Sig dictionary with /Filter /Adobe.PPKLite /SubFilter /adbe.pkcs7.detached,
- * a ByteRange placeholder, and a zeroed Contents field sized for a PAdES B-T CMS signature.
- *
- * CSC v2 spec context: The client prepares the PDF locally — the document never
- * leaves the client side. Only the hash is sent to the signing service.
+ * Inserts a /Sig dictionary with /SubFilter /adbe.pkcs7.detached,
+ * a ByteRange, and a zeroed Contents field sized for a PAdES B-T CMS signature.
+ * The document never leaves the client — only the hash is sent to the signing service.
  */
 export async function preparePdf(
   pdfBytes: Uint8Array,
   signatureLength: number = DEFAULT_SIGNATURE_LENGTH,
 ): Promise<PreparedPdf> {
-  // Load the PDF
   const pdfDoc = await PDFDocument.load(pdfBytes);
 
-  // Add signature placeholder using @signpdf/placeholder-pdf-lib
   pdflibAddPlaceholder({
     pdfDoc,
     reason: 'E-Seal by SK ID Solutions',
@@ -48,11 +40,10 @@ export async function preparePdf(
     signatureLength,
   });
 
-  // Save with specific options to preserve structure
   const preparedBytes = await pdfDoc.save({ useObjectStreams: false });
-  const pdfBuffer = Buffer.from(preparedBytes);
+  // Zero-copy wrap — pdf-lib returns a fresh Uint8Array that owns its ArrayBuffer
+  const pdfBuffer = Buffer.from(preparedBytes.buffer, preparedBytes.byteOffset, preparedBytes.byteLength);
 
-  // Find the ByteRange placeholder that was inserted
   const { byteRangePlaceholder, byteRangePlaceholderPosition } =
     findByteRange(pdfBuffer, DEFAULT_BYTE_RANGE_PLACEHOLDER);
 
@@ -60,15 +51,12 @@ export async function preparePdf(
     throw new Error('ByteRange placeholder not found in prepared PDF');
   }
 
-  // Compute actual byte ranges — same logic as @signpdf/signpdf
-  const byteRangeEnd =
-    byteRangePlaceholderPosition + byteRangePlaceholder.length;
+  const byteRangeEnd = byteRangePlaceholderPosition + byteRangePlaceholder.length;
   const contentsTagPos = pdfBuffer.indexOf('/Contents ', byteRangeEnd);
   const placeholderPos = pdfBuffer.indexOf('<', contentsTagPos);
   const placeholderEnd = pdfBuffer.indexOf('>', placeholderPos);
   const placeholderLengthWithBrackets = placeholderEnd + 1 - placeholderPos;
 
-  // ByteRange: [0, beforeSig, afterSig, remaining]
   const byteRange: [number, number, number, number] = [
     0,
     placeholderPos,
@@ -76,11 +64,9 @@ export async function preparePdf(
     pdfBuffer.length - (placeholderPos + placeholderLengthWithBrackets),
   ];
 
-  // Replace the ByteRange placeholder with the actual values
+  // Replace ByteRange placeholder with actual values
   let actualByteRange = `/ByteRange [${byteRange.join(' ')}]`;
-  actualByteRange += ' '.repeat(
-    byteRangePlaceholder.length - actualByteRange.length,
-  );
+  actualByteRange += ' '.repeat(byteRangePlaceholder.length - actualByteRange.length);
 
   const finalPdf = Buffer.concat([
     pdfBuffer.subarray(0, byteRangePlaceholderPosition),
@@ -98,17 +84,11 @@ export async function preparePdf(
 
 /**
  * Injects a hex-encoded CMS signature into the prepared PDF at the placeholder position.
- *
  * The signature hex string is padded with zeros to fill the entire placeholder.
  */
-export function injectSignature(
-  preparedPdf: Uint8Array,
-  cmsSignatureHex: string,
-  signaturePlaceholderOffset: number,
-  signaturePlaceholderLength: number,
-): Uint8Array {
-  // The placeholder includes < and >, so the actual hex content space is length - 2
-  const maxHexLength = signaturePlaceholderLength - 2;
+export function injectSignature(prepared: PreparedPdf, cmsSignatureHex: string): Uint8Array {
+  const { preparedPdf, signaturePlaceholderOffset, signaturePlaceholderLength } = prepared;
+  const maxHexLength = signaturePlaceholderLength - 2; // exclude < and >
 
   if (cmsSignatureHex.length > maxHexLength) {
     throw new Error(
@@ -117,16 +97,14 @@ export function injectSignature(
     );
   }
 
-  // Pad with zeros to fill the placeholder
-  const paddedHex =
-    cmsSignatureHex + '0'.repeat(maxHexLength - cmsSignatureHex.length);
+  const paddedHex = cmsSignatureHex + '0'.repeat(maxHexLength - cmsSignatureHex.length);
 
-  const pdf = Buffer.from(preparedPdf);
-  const before = pdf.subarray(0, signaturePlaceholderOffset);
-  const signatureContent = Buffer.from(`<${paddedHex}>`);
-  const after = pdf.subarray(
-    signaturePlaceholderOffset + signaturePlaceholderLength,
-  );
+  // Zero-copy view for subarray operations
+  const pdf = Buffer.from(preparedPdf.buffer, preparedPdf.byteOffset, preparedPdf.byteLength);
 
-  return new Uint8Array(Buffer.concat([before, signatureContent, after]));
+  return new Uint8Array(Buffer.concat([
+    pdf.subarray(0, signaturePlaceholderOffset),
+    Buffer.from(`<${paddedHex}>`),
+    pdf.subarray(signaturePlaceholderOffset + signaturePlaceholderLength),
+  ]));
 }

@@ -2,14 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { preparePdf, injectSignature } from '../src/pdf';
 import { PDFDocument } from 'pdf-lib';
 
-describe('PDF preparation', () => {
-  async function createTestPdf(): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.create();
-    pdfDoc.addPage([595, 842]); // A4
-    const bytes = await pdfDoc.save();
-    return new Uint8Array(bytes);
-  }
+async function createTestPdf(): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  pdfDoc.addPage([595, 842]); // A4
+  return new Uint8Array(await pdfDoc.save());
+}
 
+describe('PDF preparation', () => {
   it('should add a signature placeholder to a PDF', async () => {
     const pdfBytes = await createTestPdf();
     const result = await preparePdf(pdfBytes);
@@ -29,17 +28,10 @@ describe('PDF preparation', () => {
     const pdfBytes = await createTestPdf();
     const result = await preparePdf(pdfBytes);
 
-    // byteRange[1] + signaturePlaceholderLength + byteRange[3] should equal total PDF length
     const totalCoverage =
-      result.byteRange[1] +
-      result.signaturePlaceholderLength +
-      result.byteRange[3];
+      result.byteRange[1] + result.signaturePlaceholderLength + result.byteRange[3];
     expect(totalCoverage).toBe(result.preparedPdf.length);
-
-    // byteRange[2] should equal byteRange[1] + placeholder length
-    expect(result.byteRange[2]).toBe(
-      result.byteRange[1] + result.signaturePlaceholderLength,
-    );
+    expect(result.byteRange[2]).toBe(result.byteRange[1] + result.signaturePlaceholderLength);
   });
 
   it('should contain /adbe.pkcs7.detached SubFilter in the prepared PDF', async () => {
@@ -61,31 +53,16 @@ describe('PDF preparation', () => {
 });
 
 describe('Signature injection', () => {
-  async function createTestPdf(): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.create();
-    pdfDoc.addPage([595, 842]);
-    const bytes = await pdfDoc.save();
-    return new Uint8Array(bytes);
-  }
-
   it('should inject a hex signature into the placeholder', async () => {
     const pdfBytes = await createTestPdf();
     const prepared = await preparePdf(pdfBytes);
 
-    // Create a fake signature (just some hex data)
     const fakeSignatureHex = 'deadbeef'.repeat(100);
-
-    const sealed = injectSignature(
-      prepared.preparedPdf,
-      fakeSignatureHex,
-      prepared.signaturePlaceholderOffset,
-      prepared.signaturePlaceholderLength,
-    );
+    const sealed = injectSignature(prepared, fakeSignatureHex);
 
     expect(sealed).toBeInstanceOf(Uint8Array);
     expect(sealed.length).toBe(prepared.preparedPdf.length);
 
-    // The signature should be present in the output
     const sealedText = Buffer.from(sealed).toString('latin1');
     expect(sealedText).toContain(fakeSignatureHex);
   });
@@ -94,16 +71,7 @@ describe('Signature injection', () => {
     const pdfBytes = await createTestPdf();
     const prepared = await preparePdf(pdfBytes);
 
-    // Create a signature that's way too large
     const oversizedHex = 'ff'.repeat(prepared.signaturePlaceholderLength);
-
-    expect(() =>
-      injectSignature(
-        prepared.preparedPdf,
-        oversizedHex,
-        prepared.signaturePlaceholderOffset,
-        prepared.signaturePlaceholderLength,
-      ),
-    ).toThrow('exceeds placeholder capacity');
+    expect(() => injectSignature(prepared, oversizedHex)).toThrow('exceeds placeholder capacity');
   });
 });

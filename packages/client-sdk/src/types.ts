@@ -18,7 +18,6 @@ export interface SealClientConfig {
 export interface SealStep {
   /** Step identifier */
   name:
-    | 'pdf_loaded'
     | 'placeholder_created'
     | 'hash_computed'
     | 'token_obtained'
