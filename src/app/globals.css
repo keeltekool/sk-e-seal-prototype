@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* === SK ID Solutions Color Tokens (from code.html Tailwind config) === */
+  /* === Color Tokens (from code.html Tailwind config) === */
   --color-primary: #f12f00;
   --color-primary-container: #e02b00;
   --color-on-primary: #ffffff;

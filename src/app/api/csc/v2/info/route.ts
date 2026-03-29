@@ -6,11 +6,11 @@ import { NextResponse } from 'next/server';
 export async function POST() {
   return NextResponse.json({
     specs: '2.0.0.2',
-    name: 'Qualified E-Seal by SK ID',
+    name: 'Remote Qualified E-Seal',
     logo: '/logo.png',
     region: 'EE',
     lang: 'en',
-    description: 'CSC v2 compliant remote e-sealing service prototype by SK ID Solutions',
+    description: 'CSC v2 compliant remote e-sealing service prototype',
     authType: ['oauth2'],
     oauth2: 'https://qualified-eseal.sk.ee/oauth2/token',
     methods: ['credentials/list', 'credentials/info', 'credentials/authorize', 'signatures/signHash'],

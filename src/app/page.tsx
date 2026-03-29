@@ -7,7 +7,7 @@ export default function Home() {
       <nav className="sticky top-0 w-full z-50 bg-white/90 backdrop-blur-md">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <div className="text-2xl font-black text-[#f12f00] brand-logo">
-            SK ID Solutions
+            Qualified E-Seal
           </div>
           <div className="hidden md:flex items-center space-x-8">
             <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="#service">Service</a>
@@ -80,9 +80,9 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* SK E-Seal API */}
+                {/* E-Seal API */}
                 <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10">
-                  <p className="text-xs text-primary font-label uppercase tracking-wider mb-4 font-bold">SK E-Seal API</p>
+                  <p className="text-xs text-primary font-label uppercase tracking-wider mb-4 font-bold">E-Seal API</p>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary text-sm">check_circle</span>
@@ -291,7 +291,7 @@ export default function Home() {
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-6 font-headline">SK E-Seal API</h3>
+                <h3 className="font-bold text-lg mb-6 font-headline">E-Seal API</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
                     <span className="text-primary font-bold font-headline w-8">3.</span>

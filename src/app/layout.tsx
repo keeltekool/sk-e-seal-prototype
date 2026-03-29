@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Remote Qualified E-Seal — SK ID Solutions',
+  title: 'Remote Qualified E-Seal',
   description: 'Apply eIDAS Qualified electronic seals to millions of documents without a single one ever leaving your infrastructure. CSC v2 API-first remote e-sealing.',
   icons: {
     icon: '/favicon.png',
