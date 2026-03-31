@@ -24,7 +24,9 @@ export async function POST(request: Request) {
   }
 
   // Determine the base URL for the CSC v2 API (same server)
-  const baseUrl = process.env.API_URL || new URL(request.url).origin;
+  // Routes live under /api/ in Next.js App Router, so append /api
+  const origin = process.env.API_URL || new URL(request.url).origin;
+  const baseUrl = `${origin}/api`;
 
   const pdfBytes = new Uint8Array(await file.arrayBuffer());
   const originalSize = pdfBytes.length;
