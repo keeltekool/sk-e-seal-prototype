@@ -35,10 +35,12 @@ export function buildCmsSignedData(
     certDerBuffers.map((der) => bufferToAsn1(der)),
   );
 
+  // Encode serial number as raw hex bytes (avoids 32-bit overflow with large serials)
+  const serialHex = signingCert.serialNumber;
+  const serialBytes = forge.util.hexToBytes(serialHex.length % 2 ? '0' + serialHex : serialHex);
   const issuerAndSerial = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
     forge.pki.distinguishedNameToAsn1(signingCert.issuer),
-    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false,
-      asn1.integerToDer(parseInt(signingCert.serialNumber, 16)).getBytes()),
+    asn1.create(asn1.Class.UNIVERSAL, asn1.Type.INTEGER, false, serialBytes),
   ]);
 
   // Re-tag SignedAttributes from SET (0x31) to [0] IMPLICIT (0xA0)
