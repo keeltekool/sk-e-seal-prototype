@@ -4,6 +4,7 @@ import {
   findByteRange,
   DEFAULT_SIGNATURE_LENGTH,
   DEFAULT_BYTE_RANGE_PLACEHOLDER,
+  SUBFILTER_ETSI_CADES_DETACHED,
 } from '@signpdf/utils';
 
 /** Result of preparing a PDF for signing */
@@ -21,7 +22,7 @@ export interface PreparedPdf {
 /**
  * Prepares a PDF for digital signing by adding a signature placeholder.
  *
- * Inserts a /Sig dictionary with /SubFilter /adbe.pkcs7.detached,
+ * Inserts a /Sig dictionary with /SubFilter /ETSI.CAdES.detached (PAdES),
  * a ByteRange, and a zeroed Contents field sized for a PAdES B-T CMS signature.
  * The document never leaves the client — only the hash is sent to the signing service.
  */
@@ -33,11 +34,12 @@ export async function preparePdf(
 
   pdflibAddPlaceholder({
     pdfDoc,
-    reason: 'E-Seal by SK ID Solutions',
-    contactInfo: 'e-seal@sk.ee',
+    reason: 'Qualified E-Seal',
+    contactInfo: 'info@example.com',
     name: 'Qualified E-Seal',
-    location: 'Estonia',
+    location: 'EU',
     signatureLength,
+    subFilter: SUBFILTER_ETSI_CADES_DETACHED,
   });
 
   const preparedBytes = await pdfDoc.save({ useObjectStreams: false });

@@ -34,12 +34,12 @@ describe('PDF preparation', () => {
     expect(result.byteRange[2]).toBe(result.byteRange[1] + result.signaturePlaceholderLength);
   });
 
-  it('should contain /adbe.pkcs7.detached SubFilter in the prepared PDF', async () => {
+  it('should contain /ETSI.CAdES.detached SubFilter in the prepared PDF', async () => {
     const pdfBytes = await createTestPdf();
     const result = await preparePdf(pdfBytes);
 
     const pdfText = Buffer.from(result.preparedPdf).toString('latin1');
-    expect(pdfText).toContain('adbe.pkcs7.detached');
+    expect(pdfText).toContain('ETSI.CAdES.detached');
   });
 
   it('should contain actual ByteRange values (not placeholders)', async () => {
