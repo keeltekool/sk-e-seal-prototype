@@ -345,7 +345,7 @@ export default function Home() {
             </div>
             <DemoSection />
             <p className="text-sm text-secondary mt-8 italic font-body">
-              This demo uses a self-signed test certificate. In production, documents are sealed with SK&apos;s qualified certificate - validated by Adobe Acrobat and DigiDoc4.
+              This demo uses a self-signed test certificate. In production, documents are sealed with a qualified certificate issued by a Qualified Trust Service Provider - validated by Adobe Acrobat and DigiDoc4.
             </p>
           </div>
         </section>
@@ -364,7 +364,7 @@ export default function Home() {
 {`import { SealClient } from '@sk-eseal/client-sdk';
 
 const client = new SealClient({
-  baseUrl: 'https://eseal.sk.ee',
+  baseUrl: 'https://eseal.example.com',
   clientId: 'your-tenant-id',
   clientSecret: 'your-secret',
   pin: 'your-pin',

@@ -150,6 +150,25 @@ export function DemoSection() {
       const decoder = new TextDecoder();
       let buffer = '';
 
+      const processLines = (lines: string[], currentEvent: { value: string }) => {
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            currentEvent.value = line.slice(7);
+          } else if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+            if (currentEvent.value === 'step') {
+              setSteps(prev => [...prev, data as StepData]);
+            } else if (currentEvent.value === 'complete') {
+              setCompletion(data as CompletionData);
+            } else if (currentEvent.value === 'error') {
+              setError(data.message);
+            }
+            currentEvent.value = '';
+          }
+        }
+      };
+
+      const currentEvent = { value: '' };
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -157,23 +176,13 @@ export function DemoSection() {
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
+        processLines(lines, currentEvent);
+      }
 
-        let currentEvent = '';
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.slice(7);
-          } else if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
-            if (currentEvent === 'step') {
-              setSteps(prev => [...prev, data as StepData]);
-            } else if (currentEvent === 'complete') {
-              setCompletion(data as CompletionData);
-            } else if (currentEvent === 'error') {
-              setError(data.message);
-            }
-            currentEvent = '';
-          }
-        }
+      // Process any remaining data in buffer after stream closes
+      if (buffer.trim()) {
+        const lines = buffer.split('\n');
+        processLines(lines, currentEvent);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sealing failed');

@@ -12,7 +12,7 @@ export async function POST() {
     lang: 'en',
     description: 'CSC v2 compliant remote e-sealing service prototype',
     authType: ['oauth2'],
-    oauth2: 'https://qualified-eseal.sk.ee/oauth2/token',
+    oauth2: 'https://eseal.example.com/oauth2/token',
     methods: ['credentials/list', 'credentials/info', 'credentials/authorize', 'signatures/signHash'],
     signAlgorithms: {
       algos: ['1.2.840.113549.1.1.11'], // sha256WithRSAEncryption OID
