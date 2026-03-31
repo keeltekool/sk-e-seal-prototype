@@ -9,6 +9,7 @@ export const OID_CONTENT_TYPE = '1.2.840.113549.1.9.3';
 export const OID_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';
 export const OID_SIGNING_TIME = '1.2.840.113549.1.9.5';
 export const OID_TIMESTAMP_TOKEN = '1.2.840.113549.1.9.16.2.14';
+export const OID_SIGNING_CERTIFICATE_V2 = '1.2.840.113549.1.9.16.2.47';
 
 /** SHA-256 AlgorithmIdentifier as ASN.1 SEQUENCE { OID, NULL } */
 export function sha256AlgorithmId(): forge.asn1.Asn1 {

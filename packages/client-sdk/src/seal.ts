@@ -44,21 +44,6 @@ export class SealClient {
       data: { inputSize: pdfBytes.length, preparedSize: prepared.preparedPdf.length, byteRange: prepared.byteRange },
     });
 
-    // Compute hash (SignedAttributes DER → SHA-256)
-    start = performance.now();
-    const signingTime = new Date();
-    const hashResult = computeHash(prepared.preparedPdf, prepared.byteRange, signingTime);
-    const hashBase64 = hashResult.signedAttributesHash.toString('base64');
-    emitStep({
-      name: 'hash_computed',
-      description: 'PDF byte range hashed, SignedAttributes built and hashed',
-      durationMs: Math.round(performance.now() - start),
-      data: {
-        pdfHash: hashResult.pdfHash.toString('hex'),
-        signedAttributesHash: hashResult.signedAttributesHash.toString('hex'),
-      },
-    });
-
     // Get access token
     start = performance.now();
     const tokenResponse = await this.apiClient.getToken();
@@ -70,40 +55,49 @@ export class SealClient {
       data: { expiresIn: tokenResponse.expires_in },
     });
 
-    // Parallelize: credential info fetch + authorize→signHash chain
-    // credentialInfo only needs accessToken, doesn't depend on signing result
-    start = performance.now();
-    const [credInfo, rawSignature] = await Promise.all([
-      this.apiClient.getCredentialInfo(accessToken),
-      this.apiClient.authorize(accessToken, hashBase64).then(async (authResponse) => {
-        emitStep({
-          name: 'credential_authorized',
-          description: 'Credential authorized via SCAL2 PIN → SAD token',
-          durationMs: Math.round(performance.now() - start),
-          data: { sadExpiresIn: authResponse.expiresIn },
-        });
-
-        const signStart = performance.now();
-        const signResponse = await this.apiClient.signHash(accessToken, authResponse.SAD, hashBase64);
-        const sig = Buffer.from(signResponse.signatures[0]!, 'base64');
-        emitStep({
-          name: 'hash_signed',
-          description: `Hash signed via CSC v2 signHash (${sig.length} bytes)`,
-          durationMs: Math.round(performance.now() - signStart),
-          data: { signatureLength: sig.length },
-        });
-        return sig;
-      }),
-    ]);
-
-    // Convert base64 DER certs to buffers (no PEM round-trip)
+    // Fetch credential info first — we need the signing cert for ESS signing-certificate-v2
+    const credInfo = await this.apiClient.getCredentialInfo(accessToken);
     const certDerBuffers = credInfo.cert.certificates.map((b64) => Buffer.from(b64, 'base64'));
-
-    // Parse signing cert for issuer/serial (needed by CMS SignerInfo)
     const signingCertDer = certDerBuffers[0]!;
     const signingCert = forge.pki.certificateFromAsn1(
       forge.asn1.fromDer(signingCertDer.toString('binary')),
     );
+
+    // Compute hash (SignedAttributes DER → SHA-256)
+    // Includes ESS signing-certificate-v2 attribute for PAdES-BASELINE-T compliance
+    start = performance.now();
+    const signingTime = new Date();
+    const hashResult = computeHash(prepared.preparedPdf, prepared.byteRange, signingTime, signingCertDer);
+    const hashBase64 = hashResult.signedAttributesHash.toString('base64');
+    emitStep({
+      name: 'hash_computed',
+      description: 'PDF byte range hashed, SignedAttributes built and hashed',
+      durationMs: Math.round(performance.now() - start),
+      data: {
+        pdfHash: hashResult.pdfHash.toString('hex'),
+        signedAttributesHash: hashResult.signedAttributesHash.toString('hex'),
+      },
+    });
+
+    // Authorize credential (SCAL2 PIN → SAD) then sign
+    start = performance.now();
+    const authResponse = await this.apiClient.authorize(accessToken, hashBase64);
+    emitStep({
+      name: 'credential_authorized',
+      description: 'Credential authorized via SCAL2 PIN → SAD token',
+      durationMs: Math.round(performance.now() - start),
+      data: { sadExpiresIn: authResponse.expiresIn },
+    });
+
+    start = performance.now();
+    const signResponse = await this.apiClient.signHash(accessToken, authResponse.SAD, hashBase64);
+    const rawSignature = Buffer.from(signResponse.signatures[0]!, 'base64');
+    emitStep({
+      name: 'hash_signed',
+      description: `Hash signed via CSC v2 signHash (${rawSignature.length} bytes)`,
+      durationMs: Math.round(performance.now() - start),
+      data: { signatureLength: rawSignature.length },
+    });
 
     // Build CMS SignedData
     start = performance.now();

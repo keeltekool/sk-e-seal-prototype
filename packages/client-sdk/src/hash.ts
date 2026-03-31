@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import * as forge from 'node-forge';
-import { OID_CONTENT_TYPE, OID_DATA, OID_MESSAGE_DIGEST, OID_SIGNING_TIME, derToBuffer, oidNode } from './asn1-helpers';
+import { OID_CONTENT_TYPE, OID_DATA, OID_MESSAGE_DIGEST, OID_SIGNING_TIME, OID_SIGNING_CERTIFICATE_V2, sha256AlgorithmId, derToBuffer, oidNode } from './asn1-helpers';
 
 const asn1 = forge.asn1;
 
@@ -30,13 +30,14 @@ export function computeHash(
   preparedPdf: Uint8Array,
   byteRange: [number, number, number, number],
   signingTime: Date = new Date(),
+  signingCertDer?: Buffer,
 ): HashResult {
   const hash = createHash('sha256');
   hash.update(Buffer.from(preparedPdf.buffer, preparedPdf.byteOffset + byteRange[0], byteRange[1]));
   hash.update(Buffer.from(preparedPdf.buffer, preparedPdf.byteOffset + byteRange[2], byteRange[3]));
   const pdfHash = hash.digest();
 
-  const signedAttributesDer = buildSignedAttributesDer(pdfHash, signingTime);
+  const signedAttributesDer = buildSignedAttributesDer(pdfHash, signingTime, signingCertDer);
   const signedAttributesHash = createHash('sha256').update(signedAttributesDer).digest();
 
   return { pdfHash, signedAttributesDer, signedAttributesHash, signingTime };
@@ -48,7 +49,7 @@ export function computeHash(
  * IMPORTANT: When hashing for signature verification, SignedAttributes must be
  * encoded as a SET (tag 0x31), not as the IMPLICIT [0] (tag 0xA0) used in SignerInfo.
  */
-function buildSignedAttributesDer(pdfHash: Buffer, signingTime: Date): Buffer {
+function buildSignedAttributesDer(pdfHash: Buffer, signingTime: Date, signingCertDer?: Buffer): Buffer {
   const contentTypeAttr = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
     oidNode(OID_CONTENT_TYPE),
     asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SET, true, [oidNode(OID_DATA)]),
@@ -68,9 +69,28 @@ function buildSignedAttributesDer(pdfHash: Buffer, signingTime: Date): Buffer {
     ]),
   ]);
 
-  const signedAttrs = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SET, true, [
-    contentTypeAttr, signingTimeAttr, messageDigestAttr,
-  ]);
+  const attrs: forge.asn1.Asn1[] = [contentTypeAttr, signingTimeAttr, messageDigestAttr];
+
+  // ESS signing-certificate-v2 (RFC 5035) — required for PAdES-BASELINE-T
+  // Binds the signature to a specific certificate via its SHA-256 hash
+  if (signingCertDer) {
+    const certHash = createHash('sha256').update(signingCertDer).digest();
+    // ESSCertIDv2 ::= SEQUENCE { hashAlgorithm (DEFAULT sha256 — omit), certHash }
+    const essCertIdV2 = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+      asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, certHash.toString('binary')),
+    ]);
+    // SigningCertificateV2 ::= SEQUENCE { certs SEQUENCE OF ESSCertIDv2 }
+    const signingCertificateV2 = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+      asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [essCertIdV2]),
+    ]);
+    const signingCertAttr = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
+      oidNode(OID_SIGNING_CERTIFICATE_V2),
+      asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SET, true, [signingCertificateV2]),
+    ]);
+    attrs.push(signingCertAttr);
+  }
+
+  const signedAttrs = asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SET, true, attrs);
 
   return derToBuffer(asn1.toDer(signedAttrs));
 }
