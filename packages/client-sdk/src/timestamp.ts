@@ -4,7 +4,7 @@ import { OID_SHA256, sha256AlgorithmId, derToBuffer, bufferToAsn1 } from './asn1
 
 const asn1 = forge.asn1;
 
-export const DEFAULT_TSA_URL = 'https://freetsa.org/tsr';
+export const DEFAULT_TSA_URL = 'http://timestamp.sectigo.com/qualified';
 
 /**
  * Requests an RFC 3161 timestamp token from a Time Stamping Authority.

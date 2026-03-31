@@ -10,7 +10,7 @@ export interface SealClientConfig {
   pin: string;
   /** Credential ID to use for sealing */
   credentialId: string;
-  /** Optional: TSA URL for RFC 3161 timestamps. Defaults to FreeTSA. */
+  /** Optional: TSA URL for RFC 3161 timestamps. Defaults to Sectigo Qualified (EU Trusted List). */
   tsaUrl?: string;
 }
 
