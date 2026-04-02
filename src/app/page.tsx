@@ -1,4 +1,7 @@
+'use client';
+
 import { DemoSection } from './components/DemoSection';
+import { Annotation } from './components/Annotation';
 
 export default function Home() {
   return (
@@ -14,6 +17,7 @@ export default function Home() {
             <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="#how-it-works">How It Works</a>
             <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="#developers">For Developers</a>
             <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="#demo">Try Demo</a>
+            <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="/dashboard">Developer Portal</a>
             <a className="font-headline font-bold uppercase tracking-[0.2em] text-sm text-secondary hover:text-[#f12f00] transition-colors duration-200" href="#documentation">Documentation</a>
           </div>
           <div className="flex items-center space-x-6">
@@ -45,6 +49,10 @@ export default function Home() {
                 </a>
                 <a href="#documentation" className="px-8 py-4 bg-surface-container-highest text-on-surface rounded-full font-bold text-base hover:bg-surface-container-high transition-all">
                   Read the Documentation
+                </a>
+                <a href="/dashboard" className="px-8 py-4 bg-surface-container-highest text-on-surface rounded-full font-bold text-base hover:bg-surface-container-high transition-all flex items-center gap-2">
+                  Open Developer Portal
+                  <span className="material-symbols-outlined">developer_mode</span>
                 </a>
               </div>
             </div>
@@ -138,6 +146,9 @@ export default function Home() {
                   Highest legal assurance under eIDAS. Non-repudiable proof of origin and integrity.
                 </p>
               </div>
+              <Annotation>
+                Qualified is the highest of three eIDAS levels (basic → advanced → qualified). It requires certified hardware (HSM), a Qualified Trust Service Provider, and conformity assessment by an EU-accredited body. This is what separates a qualified e-seal from a simple digital signature.
+              </Annotation>
               {/* Card 2: Hash-Only Privacy */}
               <div className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
@@ -148,6 +159,9 @@ export default function Home() {
                   Your documents never leave your infrastructure. We only receive a 32-byte hash - we cannot see, read, or store your content.
                 </p>
               </div>
+              <Annotation>
+                This is a property of the CSC v2 protocol, not a policy choice. The API only accepts hashes — there is no endpoint that accepts documents. Privacy is architecturally enforced, not contractually promised.
+              </Annotation>
               {/* Card 3: API-First */}
               <div className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
@@ -228,6 +242,9 @@ export default function Home() {
                   Seal statements, agreements, and regulatory filings. Direct CSC v2 API integration for maximum throughput.
                 </p>
               </div>
+              <Annotation>
+                Current e-seal customers in this segment process hundreds of thousands of seals per month. The move from physical crypto sticks to remote API-based sealing eliminates courier logistics, RA officer overhead, and manual key ceremonies.
+              </Annotation>
               <div className="bg-surface-container-lowest p-8 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
                   <span className="material-symbols-outlined text-primary text-2xl">integration_instructions</span>
@@ -248,6 +265,9 @@ export default function Home() {
                   Add qualified e-sealing to your portfolio. Multi-tenant, per-customer credentials. CSC v2 compatible.
                 </p>
               </div>
+              <Annotation>
+                In the broker model, the seal certificate belongs to the end-entity (the small company), not the broker. The broker facilitates access but the identity chain to the legal entity must be preserved — architecturally supported through per-tenant credentials.
+              </Annotation>
             </div>
           </div>
         </section>
@@ -300,6 +320,9 @@ export default function Home() {
                       <span className="text-secondary font-body">Authenticate (OAuth 2.0)</span>
                     </div>
                   </div>
+                  <Annotation>
+                    OAuth 2.0 Client Credentials flow. Credentials are issued through the Developer Portal after QTSP onboarding. The authorized representative delegates API access to the technical team.
+                  </Annotation>
                   <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
                     <span className="text-primary font-bold font-headline w-8">4.</span>
                     <div className="flex items-center gap-2">
@@ -307,6 +330,9 @@ export default function Home() {
                       <span className="text-secondary font-body">Authorize credential (SCAL2)</span>
                     </div>
                   </div>
+                  <Annotation>
+                    This step is what makes it &quot;qualified.&quot; The PIN ensures the legal entity retains sole control of the signing key, even though the key is hosted remotely in the QTSP&apos;s HSM. Required by EN 419 241-1.
+                  </Annotation>
                   <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
                     <span className="text-primary font-bold font-headline w-8">5.</span>
                     <div className="flex items-center gap-2">
@@ -314,6 +340,9 @@ export default function Home() {
                       <span className="text-secondary font-body">Sign the hash (RSA 2048)</span>
                     </div>
                   </div>
+                  <Annotation>
+                    The private key never leaves the HSM. The hash enters, the signature comes out. The API cannot export, copy, or extract the key — enforced by QSCD hardware certification.
+                  </Annotation>
                   <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
                     <span className="text-primary font-bold font-headline w-8">6.</span>
                     <div className="flex items-center gap-2">
@@ -330,6 +359,9 @@ export default function Home() {
                 <strong className="text-on-surface">The document never crosses the boundary.</strong> Only a 32-byte SHA-256 hash is transmitted. Your infrastructure computes the hash locally, sends it to the API, receives back a cryptographic signature, and assembles the final sealed document. We never see the content. This is not a policy choice - it&apos;s how the CSC v2 protocol works by design.
               </p>
             </div>
+            <Annotation detail="The Client SDK (packages/client-sdk) handles: PDF placeholder creation (pdf-lib), byte range hash computation with SignedAttributes DER encoding, CMS/PKCS#7 SignedData assembly (node-forge), RFC 3161 timestamp requests to qualified TSA, and final signature injection into the PDF.">
+              Steps 1-2 and 7-10 execute on your infrastructure — the API never sees the document. The Client SDK handles PDF preparation, hash computation, CMS assembly, timestamping, and injection. Without it, your team would need to implement PAdES B-T compliant CMS construction from scratch. Whether the production service includes an official SDK is a product decision — this prototype includes a fully working one.
+            </Annotation>
           </div>
         </section>
 
@@ -347,6 +379,9 @@ export default function Home() {
             <p className="text-sm text-secondary mt-8 italic font-body">
               This demo uses a self-signed test certificate. In production, documents are sealed with a qualified certificate issued by a Qualified Trust Service Provider - validated by Adobe Acrobat and DigiDoc4.
             </p>
+            <p className="text-sm text-secondary mt-2 font-body">
+              Want to see the full API flow with your own credentials? <a href="/dashboard" className="text-primary hover:underline font-bold">Open the Developer Portal</a>.
+            </p>
           </div>
         </section>
 
@@ -357,6 +392,9 @@ export default function Home() {
               <span className="font-label font-bold uppercase tracking-[0.2em] text-primary text-xs mb-4 block">FOR DEVELOPERS</span>
               <h2 className="text-[2.5rem] font-bold leading-tight font-headline">From zero to sealed PDF in 5 minutes.</h2>
             </div>
+            <p className="text-secondary font-body mb-6">
+              Get these values from the <a href="/dashboard" className="text-primary hover:underline font-bold">Developer Portal</a> — generate credentials, pick a seal certificate, and you&apos;re ready to integrate.
+            </p>
             {/* Code block */}
             <div className="bg-[#1b1c1b] rounded-xl p-8 mb-16 overflow-x-auto">
               <pre className="text-sm leading-relaxed">
@@ -376,8 +414,17 @@ const result = await client.seal(pdfBytes);
                 </code>
               </pre>
             </div>
-            {/* Three feature cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Four feature cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <a href="/dashboard" className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300 block">
+                <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-3xl">developer_mode</span>
+                </div>
+                <h3 className="text-xl font-bold mb-4 font-headline">Developer Portal</h3>
+                <p className="text-secondary leading-relaxed font-body">
+                  Get API credentials, manage seal certificates, test the full CSC v2 integration flow step by step.
+                </p>
+              </a>
               <div className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
                   <span className="material-symbols-outlined text-primary text-3xl">code</span>
@@ -614,6 +661,16 @@ const result = await client.seal(pdfBytes);
             {/* Developer Tools grid */}
             <h3 className="font-bold text-lg mb-6 font-headline">Developer Tools</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+              <a href="/dashboard" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary">developer_mode</span>
+                  <div>
+                    <h4 className="font-bold font-headline">Developer Portal</h4>
+                    <p className="text-sm text-secondary font-body">Get credentials, manage seal certificates, test the API flow</p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">arrow_forward</span>
+              </a>
               <a href="/docs" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary">api</span>
@@ -697,8 +754,8 @@ const result = await client.seal(pdfBytes);
               <button className="bg-white text-primary px-10 py-5 rounded-full font-bold text-lg hover:bg-surface-container-low transition-all">
                 Contact Sales
               </button>
-              <a href="#demo" className="bg-transparent text-white border-2 border-white/30 px-10 py-5 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
-                Try the Demo
+              <a href="/dashboard" className="bg-transparent text-white border-2 border-white/30 px-10 py-5 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                Open Developer Portal
               </a>
             </div>
           </div>
