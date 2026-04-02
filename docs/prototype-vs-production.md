@@ -18,8 +18,8 @@
 | **Private key storage** | AES-256-GCM encrypted in PostgreSQL | HSM (FIPS 140-2 Level 3+) | 2 functions to replace in `crypto.ts` |
 | **Authentication** | OAuth 2.0 Client Credentials | Same | Protocol is identical |
 | **SCAL level** | SCAL2 (PIN → SAD) | SCAL2 | Flow is identical |
-| **Timestamp Authority** | FreeTSA.org (free, public) | SK's own TSA or trusted third-party | Config change: `tsaUrl` parameter |
-| **Multi-tenancy** | Single demo tenant | Full tenant provisioning | Admin API (Phase 2) |
+| **Timestamp Authority** | Sectigo Qualified TSA (EU Trusted List) | SK's own TSA or trusted third-party | Config change: `tsaUrl` parameter |
+| **Multi-tenancy** | Demo tenant with 3 seal credentials + Developer Portal | Full tenant provisioning | Admin API (Phase 2) |
 | **Client SDK** | TypeScript, 8 modules, 23 tests | Same SDK + additional language ports | SDK is production-ready in structure |
 | **Database** | Neon serverless PostgreSQL | Enterprise PostgreSQL or managed DB | Connection string swap |
 | **Rate limiting** | None | Upstash Redis or similar | Phase 3 |
@@ -133,21 +133,19 @@ The SDK at `packages/client-sdk/` is structured as a real npm package:
 
 Everything else (endpoints, SDK, CMS, PDF handling) stays unchanged.
 
-### FreeTSA.org (Public TSA)
+### Sectigo Qualified TSA
 
-**What:** Timestamps come from FreeTSA.org, a free public RFC 3161 TSA. It's not a qualified TSA.
+**What:** Timestamps come from Sectigo's Qualified TSA, which is on the EU Trusted List. The prototype already uses a qualified timestamp authority.
 
-**Why it doesn't matter:** The TSA protocol (RFC 3161) is identical regardless of provider. The request format, response parsing, and CMS embedding all work the same way. FreeTSA produces real cryptographic timestamps — the only difference is trust chain and SLA.
+**Production change:** SK may choose to use their own TSA instead. One config value: `tsaUrl: 'https://tsa.sk.ee/tsa'`. No code changes. The SDK already accepts a custom `tsaUrl` parameter.
 
-**Production change:** One config value: `tsaUrl: 'https://tsa.sk.ee/tsa'` (or wherever SK's TSA lives). No code changes. The SDK already accepts a custom `tsaUrl` parameter.
+### Demo Tenant with Developer Portal
 
-### Single Demo Tenant
+**What:** One demo tenant ("Demo Corporation OÜ") with 3 seal credentials (Invoice Sealing, Contract Sealing, Regulatory Filings). The Developer Portal provides credential management and a seal playground for testing the full API flow.
 
-**What:** One hardcoded test tenant (`demo-tenant-001`) with one credential. No admin API for provisioning.
+**Why it doesn't matter:** The multi-tenant architecture is already in place — `tenants` and `credentials` are separate tables with proper foreign keys. The SCAL2 flow, token scoping, and credential isolation all work correctly. Adding more tenants is an admin API (CRUD operations), not an architectural change.
 
-**Why it doesn't matter:** The multi-tenant architecture is already in place — `tenants` and `credentials` are separate tables with proper foreign keys. The SCAL2 flow, token scoping, and credential isolation all work correctly for the single tenant. Adding more tenants is an admin API (CRUD operations), not an architectural change.
-
-**Production change:** Build an admin API for tenant/credential CRUD (Phase 2). The existing schema supports it.
+**Production change:** Build a full admin API for tenant/credential CRUD with legal entity onboarding. The existing schema and Developer Portal pattern support it.
 
 ### No Rate Limiting
 
@@ -186,7 +184,7 @@ Everything else (endpoints, SDK, CMS, PDF handling) stays unchanged.
 | **bcryptjs** | PIN/secret hashing | Same, or native bcrypt | Standard bcrypt with cost 12 |
 | **pdf-lib** | PDF manipulation | Same, or iText, or Apache PDFBox | Standard PDF operations |
 | **@signpdf/placeholder-pdf-lib** | Signature placeholder | Same, or manual placeholder injection | Inserts standard PAdES /Sig dictionary |
-| **FreeTSA.org** | RFC 3161 timestamps | SK TSA or qualified TSA provider | Same protocol, different endpoint |
+| **Sectigo QTSA.org** | RFC 3161 timestamps | SK TSA or qualified TSA provider | Same protocol, different endpoint |
 
 **Key point:** Every dependency implements a standard (CSC v2, RFC 5652, RFC 3161, OAuth 2.0, PAdES). Swapping any dependency for a production equivalent produces identical outputs because the standards define the wire format.
 
@@ -218,7 +216,7 @@ Phase 1 (this prototype)          Phase 2                           Phase 3
 ✅ CSC v2 API (6 endpoints)       Admin API (tenant CRUD)           Rate limiting (Redis)
 ✅ OAuth 2.0 + SCAL2              Multi-tenant provisioning         PAdES B-LT (revocation)
 ✅ CMS SignedData (manual ASN.1)  Real SK certificate (.p12)        SDK → npm publish
-✅ PAdES B-T (FreeTSA)            HSM integration (PKCS#11)         Batch signing
+✅ PAdES B-T (Sectigo QTSA)            HSM integration (PKCS#11)         Batch signing
 ✅ Client SDK (TypeScript)        Mini-PKI (Root → Intermediate)    Certificate lifecycle
 ✅ CLI demo + tests               SK TSA endpoint                   Additional SDK languages
 ✅ OpenAPI + Swagger UI            Monitoring + alerting              ETSI conformance testing

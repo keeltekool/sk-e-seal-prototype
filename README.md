@@ -1,8 +1,8 @@
-# Qualified E-Seal by SK ID
+# Qualified E-Seal
 
-The first open-source CSC v2 compliant remote e-sealing service. A working prototype that demonstrates the complete flow: client sends a PDF document hash, gets it sealed via a standards-compliant API, and receives back a sealed PDF with a valid PAdES B-T digital signature.
+The first open-source CSC v2 compliant remote e-sealing service. Full working prototype: 6 API endpoints, TypeScript client SDK (8 modules, 24 tests), live demo with SSE Process X-Ray, Developer Portal with credential management and seal playground, PAdES B-T signatures with RFC 3161 qualified timestamps. Hash-only privacy model — documents never leave client infrastructure.
 
-Built as a reference implementation for the [SK ID Solutions](https://www.skidsolutions.eu/) Remote E-Seal Initiative.
+**[Live Demo](https://sk-e-seal-prototype.vercel.app)** | **[Developer Portal](https://sk-e-seal-prototype.vercel.app/dashboard)** | **[API Docs](https://sk-e-seal-prototype.vercel.app/docs)**
 
 ## Architecture
 
@@ -19,7 +19,7 @@ CLIENT (SDK)                                SERVER (CSC v2 API)
                                      ──→    7. POST /csc/v2/signatures/signHash (hash → sig)
                                      ←──    8. Raw RSA signature returned
 9. Wrap in CMS SignedData
-10. Add RFC 3161 timestamp (FreeTSA)
+10. Add RFC 3161 timestamp (Sectigo Qualified TSA)
 11. Inject CMS into PDF placeholder
 12. Output: sealed PDF (PAdES B-T)
 ```
@@ -35,7 +35,7 @@ npm install && cd packages/client-sdk && npm install && cd ../..
 
 # Set up .env.local with DATABASE_URL, JWT_SECRET, CREDENTIAL_ENCRYPTION_KEY
 npx tsx scripts/migrate.ts
-npx tsx scripts/seed.ts       # Creates demo tenant + self-signed cert
+npx tsx scripts/seed.ts       # Creates demo tenant + 3 seal credentials
 
 npm run dev                    # Start API server on :3000
 npx tsx scripts/create-test-pdf.ts
@@ -71,11 +71,11 @@ The SDK is a standalone package at `packages/client-sdk/` — structured for npm
 import { SealClient } from '@sk-eseal/client-sdk';
 
 const client = new SealClient({
-  baseUrl: 'http://localhost:3000',
-  clientId: 'demo-tenant-001',
-  clientSecret: 'your-secret',
-  pin: '12345',
-  credentialId: 'your-credential-id',
+  baseUrl: 'https://sk-e-seal-prototype.vercel.app/api',
+  clientId: 'tenant-demo-corp-001',
+  clientSecret: 'your-secret',    // Generate in Developer Portal
+  pin: 'your-pin',                // Generate in Developer Portal
+  credentialId: 'cred-inv-001',   // Choose from portal's Seal Credentials
 });
 
 const result = await client.seal(pdfBytes, {
@@ -96,7 +96,7 @@ const result = await client.seal(pdfBytes, {
 | `hash.ts` | `computeHash()` — SignedAttributes DER → SHA-256 (the CMS subtlety) |
 | `api.ts` | `CscApiClient` — typed HTTP client for all CSC v2 endpoints |
 | `cms.ts` | `buildCmsSignedData()` / `addTimestampToCms()` — PKCS#7 assembly |
-| `timestamp.ts` | `getTimestamp()` — RFC 3161 TSA client (FreeTSA.org default) |
+| `timestamp.ts` | `getTimestamp()` — RFC 3161 TSA client (Sectigo Qualified TSA default) |
 | `asn1-helpers.ts` | OID constants, DER conversion utilities |
 | `types.ts` | `SealClientConfig`, `SealStep`, `SealOptions`, `SealResult` |
 
@@ -133,7 +133,7 @@ sk-e-seal-prototype/
 │   ├── seal-demo.ts                End-to-end sealing demo
 │   ├── create-test-pdf.ts          Generate test PDF
 │   ├── migrate.ts                  Database migration
-│   └── seed.ts                     Seed demo tenant + credential
+│   └── seed.ts                     Seed demo tenant + 3 seal credentials
 ├── public/openapi.yaml             OpenAPI 3.1 specification
 └── docs/
     ├── architecture.md             Component diagram, data flow, design decisions
@@ -162,18 +162,17 @@ sk-e-seal-prototype/
 | Certificates | `node-forge` (X.509, ASN.1, CMS) |
 | PDF | `pdf-lib` + `@signpdf/*` |
 | JWT | `jose` |
-| Timestamps | FreeTSA.org (RFC 3161) |
+| Timestamps | Sectigo Qualified TSA (RFC 3161, EU Trusted List) |
 | API docs | OpenAPI 3.1 + Swagger UI |
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) — component diagram, data flow, design rationale
+- [Architecture](docs/architecture.md) — component diagram, data flow, design decisions
 - [CSC v2 Mapping](docs/csc-v2-mapping.md) — every spec section mapped to code
-- [Prototype vs Production](docs/prototype-vs-production.md) — what's real, what's simplified, what changes for production
-- [Seal Your First PDF](docs/guides/seal-first-pdf.md) — quickstart guide
 - [Certificate Swap](docs/guides/certificate-swap.md) — replace test cert with real SK cert
+- [Developer Portal](https://sk-e-seal-prototype.vercel.app/dashboard) — get credentials, test the API flow
+- [Swagger UI](https://sk-e-seal-prototype.vercel.app/docs) — interactive API explorer
 - [OpenAPI Spec](public/openapi.yaml) — machine-readable API definition
-- [Swagger UI](http://localhost:3000/docs) — interactive API explorer
 
 ## Standards
 

@@ -23,7 +23,7 @@
     │              └───────┬───────┘        │               │
     │                      │          ┌─────┴──────┐        │
     │                      │          │timestamp.ts│        │
-    │                      │          │ FreeTSA.org│        │
+    │                      │          │ Sectigo QTSA│        │
     │                      │          └────────────┘        │
     │              ┌───────┴───────┐                        │
     │              │  seal.ts      │  ← orchestrator        │
@@ -85,7 +85,7 @@ The sealing flow follows CSC v2's hash-only model. The PDF document **never leav
                     DigestInfo(SHA-256, hash) → RSA PKCS#1 v1.5
   9     Client      Receive raw RSA signature                          §11.7
  10     Client      Wrap signature in CMS SignedData container         RFC 5652
- 11     Client      POST to FreeTSA.org → RFC 3161 timestamp          RFC 3161
+ 11     Client      POST to Sectigo QTSA → RFC 3161 timestamp          RFC 3161
  12     Client      Add timestamp as CMS unsigned attribute            RFC 5652 §11.4
  13     Client      Inject CMS hex into PDF placeholder                PAdES (ETSI 319 142)
  14     Client      Output: sealed PDF with PAdES B-T signature        —
@@ -182,7 +182,7 @@ Node-forge's `pkcs7.createSignedData()` expects to perform the signing itself. S
 The CSC API returns certificates as base64-encoded DER. The SDK keeps them as DER buffers throughout — no PEM conversion at any stage. This avoids unnecessary encoding overhead and matches the ASN.1 structures that CMS expects.
 
 ### PAdES B-T from day one
-Every signature includes an RFC 3161 timestamp (from FreeTSA.org). This elevates the signature from PAdES Baseline B to Baseline-T, proving when the signature was created. The 16KB signature placeholder accommodates both the CMS container and the timestamp token.
+Every signature includes an RFC 3161 timestamp (from Sectigo QTSA). This elevates the signature from PAdES Baseline B to Baseline-T, proving when the signature was created. The 16KB signature placeholder accommodates both the CMS container and the timestamp token.
 
 ### Certificate swappability
 The credential store is designed so any certificate + key pair can be plugged in:
@@ -206,7 +206,7 @@ The `SealClient.seal()` method parallelizes the credential info fetch with the a
 | PDF | `pdf-lib` + `@signpdf/*` | Signature placeholders and injection |
 | JWT | `jose` | Access tokens + SAD tokens |
 | Auth | `bcryptjs` | Password/PIN hashing |
-| Timestamps | FreeTSA.org | Free RFC 3161 TSA for prototype |
+| Timestamps | Sectigo QTSA | Free RFC 3161 TSA for prototype |
 | API docs | OpenAPI 3.1 + Swagger UI | At `/docs` |
 
 ## Security Model

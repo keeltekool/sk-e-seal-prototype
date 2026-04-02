@@ -598,14 +598,14 @@ const result = await client.seal(pdfBytes);
             </a>
 
             {/* Documentation grid */}
-            <h3 className="font-bold text-lg mb-6 font-headline">Documentation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+            <h3 className="font-bold text-lg mb-6 font-headline">Technical Documentation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
               <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/architecture.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary">architecture</span>
                   <div>
                     <h4 className="font-bold font-headline">Architecture</h4>
-                    <p className="text-sm text-secondary font-body">Component diagram, data flow, design decisions, database schema</p>
+                    <p className="text-sm text-secondary font-body">Component diagram, data flow, design decisions</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
@@ -615,27 +615,7 @@ const result = await client.seal(pdfBytes);
                   <span className="material-symbols-outlined text-primary">map</span>
                   <div>
                     <h4 className="font-bold font-headline">CSC v2 Mapping</h4>
-                    <p className="text-sm text-secondary font-body">Every CSC v2 spec section mapped to exact file and line number</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/prototype-vs-production.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">compare_arrows</span>
-                  <div>
-                    <h4 className="font-bold font-headline">Prototype vs Production</h4>
-                    <p className="text-sm text-secondary font-body">What&apos;s real, what&apos;s simplified, full upgrade path</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/guides/seal-first-pdf.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">play_circle</span>
-                  <div>
-                    <h4 className="font-bold font-headline">Seal Your First PDF</h4>
-                    <p className="text-sm text-secondary font-body">Step-by-step quickstart guide - clone to sealed PDF</p>
+                    <p className="text-sm text-secondary font-body">Every spec section mapped to code</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
@@ -644,18 +624,8 @@ const result = await client.seal(pdfBytes);
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary">swap_horiz</span>
                   <div>
-                    <h4 className="font-bold font-headline">Certificate Swap Guide</h4>
-                    <p className="text-sm text-secondary font-body">Replace the test cert with a real SK .p12 certificate</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/README.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">info</span>
-                  <div>
-                    <h4 className="font-bold font-headline">README</h4>
-                    <p className="text-sm text-secondary font-body">Project overview, quick start, full documentation index</p>
+                    <h4 className="font-bold font-headline">Certificate Swap</h4>
+                    <p className="text-sm text-secondary font-body">Production upgrade path — zero code changes</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
@@ -701,16 +671,6 @@ const result = await client.seal(pdfBytes);
                   <div>
                     <h4 className="font-bold font-headline">Client SDK</h4>
                     <p className="text-sm text-secondary font-body">Standalone TypeScript SDK - 8 modules, 23 tests, npm-ready</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/scripts/seal-demo.ts" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">terminal</span>
-                  <div>
-                    <h4 className="font-bold font-headline">CLI Demo</h4>
-                    <p className="text-sm text-secondary font-body">End-to-end sealing from the command line</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
