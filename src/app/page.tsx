@@ -597,44 +597,8 @@ const result = await client.seal(pdfBytes);
               </div>
             </a>
 
-            {/* Documentation grid */}
-            <h3 className="font-bold text-lg mb-6 font-headline">Technical Documentation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/architecture.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">architecture</span>
-                  <div>
-                    <h4 className="font-bold font-headline">Architecture</h4>
-                    <p className="text-sm text-secondary font-body">Component diagram, data flow, design decisions</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/csc-v2-mapping.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">map</span>
-                  <div>
-                    <h4 className="font-bold font-headline">CSC v2 Mapping</h4>
-                    <p className="text-sm text-secondary font-body">Every spec section mapped to code</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-              <a href="https://github.com/keeltekool/sk-e-seal-prototype/blob/master/docs/guides/certificate-swap.md" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary">swap_horiz</span>
-                  <div>
-                    <h4 className="font-bold font-headline">Certificate Swap</h4>
-                    <p className="text-sm text-secondary font-body">Production upgrade path — zero code changes</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
-              </a>
-            </div>
-
-            {/* Developer Tools grid */}
-            <h3 className="font-bold text-lg mb-6 font-headline">Developer Tools</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+            {/* Tools & Resources */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
               <a href="/dashboard" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary">developer_mode</span>
@@ -675,16 +639,11 @@ const result = await client.seal(pdfBytes);
                 </div>
                 <span className="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">open_in_new</span>
               </a>
-            </div>
-
-            {/* Standards */}
-            <h3 className="font-bold text-lg mb-6 font-headline">Standards</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a href="https://cloudsignatureconsortium.org/wp-content/uploads/2023/04/csc-api-v2.0.0.2.pdf" target="_blank" rel="noopener noreferrer" className="bg-surface-container-lowest p-6 rounded-xl group hover:bg-surface-container-high transition-all duration-300 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary">menu_book</span>
                   <div>
-                    <h4 className="font-bold font-headline">CSC v2 Specification (PDF)</h4>
+                    <h4 className="font-bold font-headline">CSC v2 Specification</h4>
                     <p className="text-sm text-secondary font-body">The 100-page standard this prototype implements</p>
                   </div>
                 </div>
