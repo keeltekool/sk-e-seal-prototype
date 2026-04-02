@@ -146,9 +146,6 @@ export default function Home() {
                   Highest legal assurance under eIDAS. Non-repudiable proof of origin and integrity.
                 </p>
               </div>
-              <Annotation>
-                Qualified is the highest of three eIDAS levels (basic → advanced → qualified). It requires certified hardware (HSM), a Qualified Trust Service Provider, and conformity assessment by an EU-accredited body. This is what separates a qualified e-seal from a simple digital signature.
-              </Annotation>
               {/* Card 2: Hash-Only Privacy */}
               <div className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
@@ -159,9 +156,6 @@ export default function Home() {
                   Your documents never leave your infrastructure. We only receive a 32-byte hash - we cannot see, read, or store your content.
                 </p>
               </div>
-              <Annotation>
-                This is a property of the CSC v2 protocol, not a policy choice. The API only accepts hashes — there is no endpoint that accepts documents. Privacy is architecturally enforced, not contractually promised.
-              </Annotation>
               {/* Card 3: API-First */}
               <div className="bg-surface-container-lowest p-10 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center mb-8 group-hover:bg-primary/10 transition-colors">
@@ -182,6 +176,14 @@ export default function Home() {
                   Every seal includes an RFC 3161 qualified timestamp - cryptographic proof of exactly when the document was sealed. PAdES B-T from day one.
                 </p>
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-w-3xl">
+              <Annotation>
+                Qualified is the highest of three eIDAS levels (basic → advanced → qualified). It requires certified hardware (HSM), a Qualified Trust Service Provider, and conformity assessment by an EU-accredited body. This is what separates a qualified e-seal from a simple digital signature.
+              </Annotation>
+              <Annotation>
+                The hash-only model is a property of the CSC v2 protocol, not a policy choice. The API only accepts hashes — there is no endpoint that accepts documents. Privacy is architecturally enforced, not contractually promised.
+              </Annotation>
             </div>
           </div>
         </section>
@@ -242,9 +244,6 @@ export default function Home() {
                   Seal statements, agreements, and regulatory filings. Direct CSC v2 API integration for maximum throughput.
                 </p>
               </div>
-              <Annotation>
-                Current e-seal customers in this segment process hundreds of thousands of seals per month. The move from physical crypto sticks to remote API-based sealing eliminates courier logistics, RA officer overhead, and manual key ceremonies.
-              </Annotation>
               <div className="bg-surface-container-lowest p-8 rounded-xl group hover:bg-surface-container-high transition-all duration-300">
                 <div className="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
                   <span className="material-symbols-outlined text-primary text-2xl">integration_instructions</span>
@@ -265,6 +264,11 @@ export default function Home() {
                   Add qualified e-sealing to your portfolio. Multi-tenant, per-customer credentials. CSC v2 compatible.
                 </p>
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-w-4xl">
+              <Annotation>
+                Current e-seal customers in this segment process hundreds of thousands of seals per month. The move from physical crypto sticks to remote API-based sealing eliminates courier logistics, RA officer overhead, and manual key ceremonies.
+              </Annotation>
               <Annotation>
                 In the broker model, the seal certificate belongs to the end-entity (the small company), not the broker. The broker facilitates access but the identity chain to the legal entity must be preserved — architecturally supported through per-tenant credentials.
               </Annotation>

@@ -380,9 +380,6 @@ export default function DashboardPage() {
                   {generatedSecret ? 'Regenerate Secret' : 'Generate Secret'}
                 </button>
               </div>
-              <Annotation>
-                OAuth 2.0 Client Credentials (RFC 6749 §4.4) authenticate your system to the e-seal API. In production, these are bound to the legal entity that completed onboarding. Rotating the secret immediately invalidates all active access tokens.
-              </Annotation>
             </div>
 
             {/* SCAL2 PIN */}
@@ -416,10 +413,15 @@ export default function DashboardPage() {
                   {generatedPin ? 'Regenerate PIN' : 'Generate PIN'}
                 </button>
               </div>
-              <Annotation>
-                The PIN is the Sole Control Assurance Level 2 (SCAL2) component required by EN 419 241-1 for qualified electronic seals. Each signing operation requires explicit PIN-based authorization — this ensures the legal entity retains sole control over their signing keys, even though the keys are hosted remotely in the QTSP&apos;s HSM. The PIN is not a password — it&apos;s a cryptographic authorization factor.
-              </Annotation>
             </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+            <Annotation>
+              OAuth 2.0 Client Credentials (RFC 6749 §4.4) authenticate your system to the e-seal API. In production, these are bound to the legal entity that completed onboarding. Rotating the secret immediately invalidates all active access tokens.
+            </Annotation>
+            <Annotation>
+              The PIN is the Sole Control Assurance Level 2 (SCAL2) component required by EN 419 241-1 for qualified electronic seals. Each signing operation requires explicit PIN-based authorization — this ensures the legal entity retains sole control over their signing keys, even though the keys are hosted remotely in the QTSP&apos;s HSM. The PIN is not a password — it&apos;s a cryptographic authorization factor.
+            </Annotation>
           </div>
         </section>
 
