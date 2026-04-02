@@ -1,27 +1,18 @@
-import { neon } from '@neondatabase/serverless';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-
-const DEMO_CLIENT_ID = 'tenant-demo-corp-001';
+// Returns the demo OAuth credentials from env vars.
+// In a real portal, this would generate fresh credentials and hash them in the DB.
+// For the demo, we return the seed values so the playground and landing page demo
+// both work with the same credentials — no DB conflicts.
 
 export async function POST() {
-  const sql = neon(process.env.DATABASE_URL!);
+  const clientId = process.env.DEMO_CLIENT_ID;
+  const clientSecret = process.env.DEMO_CLIENT_SECRET;
 
-  const clientSecret = crypto.randomBytes(32).toString('hex');
-  const clientSecretHash = await bcrypt.hash(clientSecret, 12);
-
-  const result = await sql`
-    UPDATE tenants
-    SET client_secret_hash = ${clientSecretHash}, updated_at = NOW()
-    WHERE client_id = ${DEMO_CLIENT_ID}
-    RETURNING client_id`;
-
-  if (result.length === 0 || !result[0]) {
-    return Response.json({ error: 'Demo tenant not found' }, { status: 404 });
+  if (!clientId || !clientSecret) {
+    return Response.json({ error: 'Demo credentials not configured. Run seed script.' }, { status: 500 });
   }
 
   return Response.json({
-    clientId: result[0].client_id as string,
+    clientId,
     clientSecret,
     message: 'Save your client secret now — it will not be shown again.',
   });

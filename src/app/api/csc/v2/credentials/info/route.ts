@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
   const cred = rows[0]!;
 
   // Parse certificate for subject/issuer info
-  const cert = forge.pki.certificateFromPem(cred.certificate_pem as string);
+  // Strip \r from Windows-style line endings — forge requires \n-only PEM
+  const cert = forge.pki.certificateFromPem((cred.certificate_pem as string).replace(/\r/g, ''));
   const subject = cert.subject.attributes.map(a => `${a.shortName}=${a.value}`).join(', ');
   const issuer = cert.issuer.attributes.map(a => `${a.shortName}=${a.value}`).join(', ');
 
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     const chainPem = cred.certificate_chain_pem as string;
     const chainCerts = chainPem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g) || [];
     for (const pem of chainCerts) {
-      const chainCert = forge.pki.certificateFromPem(pem);
+      const chainCert = forge.pki.certificateFromPem(pem.replace(/\r/g, ''));
       const chainDer = forge.asn1.toDer(forge.pki.certificateToAsn1(chainCert)).getBytes();
       certChain.push(forge.util.encode64(chainDer));
     }

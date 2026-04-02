@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
   }
 
   const privateKeyPem = decryptPrivateKey(credRows[0]!.private_key_pem_encrypted as string);
-  const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+  // Strip \r from Windows-style line endings — forge requires \n-only PEM
+  const privateKey = forge.pki.privateKeyFromPem(privateKeyPem.replace(/\r/g, ''));
 
   // Sign each hash with PKCS#1 v1.5 + SHA-256 DigestInfo
   const signatures: string[] = [];

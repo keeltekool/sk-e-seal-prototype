@@ -54,8 +54,11 @@ async function seed() {
   // Create 3 seal credentials with distinct certificates
   for (const cfg of CREDENTIAL_CONFIGS) {
     console.log(`Generating keypair + cert for "${cfg.label}"...`);
-    const certLabel = `${TENANT_NAME} — ${cfg.label}`;
-    const { certificatePem, privateKeyPem } = generateTestCertificate(certLabel);
+    const certLabel = `Demo Corporation - ${cfg.label}`;
+    const generated = generateTestCertificate(certLabel);
+    // Strip \r from Windows line endings — forge requires \n-only PEM
+    const certificatePem = generated.certificatePem.replace(/\r/g, '');
+    const privateKeyPem = generated.privateKeyPem.replace(/\r/g, '');
     const encryptedKey = encryptPrivateKey(privateKeyPem);
 
     await sql`
