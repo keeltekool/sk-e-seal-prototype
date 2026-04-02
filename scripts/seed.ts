@@ -1,4 +1,4 @@
-// Seeds the database with a test tenant and e-seal credential.
+// Seeds the database with a demo tenant and multiple e-seal credentials.
 // Run once after migration to set up the demo environment.
 import { neon } from '@neondatabase/serverless';
 import { config } from 'dotenv';
@@ -8,15 +8,24 @@ import crypto from 'crypto';
 
 config({ path: '.env.local' });
 
+const TENANT_NAME = 'Demo Corporation OÜ';
+const CLIENT_ID = 'tenant-demo-corp-001';
+
+const CREDENTIAL_CONFIGS = [
+  { id: 'cred-inv-001', label: 'Invoice Sealing', status: 'active' },
+  { id: 'cred-con-002', label: 'Contract Sealing', status: 'active' },
+  { id: 'cred-reg-003', label: 'Regulatory Filings', status: 'suspended' },
+];
+
 async function seed() {
   const sql = neon(process.env.DATABASE_URL!);
 
-  const clientId = 'demo-tenant-001';
   const clientSecret = crypto.randomBytes(32).toString('hex');
-  const pin = '12345'; // Demo PIN — would be customer-configured in production
+  const pin = crypto.randomInt(100000, 999999).toString();
 
   console.log('=== Demo Tenant Credentials ===');
-  console.log(`Client ID:     ${clientId}`);
+  console.log(`Organization:  ${TENANT_NAME}`);
+  console.log(`Client ID:     ${CLIENT_ID}`);
   console.log(`Client Secret: ${clientSecret}`);
   console.log(`PIN:           ${pin}`);
   console.log('================================');
@@ -26,33 +35,47 @@ async function seed() {
   const clientSecretHash = await bcrypt.hash(clientSecret, 12);
   const pinHash = await bcrypt.hash(pin, 12);
 
+  // Upsert tenant
   const tenantRows = await sql`
     INSERT INTO tenants (name, client_id, client_secret_hash, pin_hash)
-    VALUES (${'Demo Organization OUE'}, ${clientId}, ${clientSecretHash}, ${pinHash})
-    ON CONFLICT (client_id) DO UPDATE SET client_secret_hash = ${clientSecretHash}, pin_hash = ${pinHash}, updated_at = NOW()
+    VALUES (${TENANT_NAME}, ${CLIENT_ID}, ${clientSecretHash}, ${pinHash})
+    ON CONFLICT (client_id) DO UPDATE SET
+      name = ${TENANT_NAME},
+      client_secret_hash = ${clientSecretHash},
+      pin_hash = ${pinHash},
+      updated_at = NOW()
     RETURNING id`;
   const tenantId = tenantRows[0]!.id;
   console.log(`Tenant created: ${tenantId}`);
 
-  console.log('Generating RSA 2048 keypair + self-signed X.509 certificate...');
-  const { certificatePem, privateKeyPem } = generateTestCertificate('Demo Organization OUE');
+  // Delete existing credentials for this tenant (clean re-seed)
+  await sql`DELETE FROM credentials WHERE tenant_id = ${tenantId}`;
 
-  const encryptedKey = encryptPrivateKey(privateKeyPem);
+  // Create 3 seal credentials with distinct certificates
+  for (const cfg of CREDENTIAL_CONFIGS) {
+    console.log(`Generating keypair + cert for "${cfg.label}"...`);
+    const certLabel = `${TENANT_NAME} — ${cfg.label}`;
+    const { certificatePem, privateKeyPem } = generateTestCertificate(certLabel);
+    const encryptedKey = encryptPrivateKey(privateKeyPem);
 
-  const credentialId = `cred-${crypto.randomBytes(8).toString('hex')}`;
-  await sql`
-    INSERT INTO credentials (tenant_id, credential_id, certificate_pem, private_key_pem_encrypted, key_algorithm, key_length, hash_algorithm, scal)
-    VALUES (${tenantId}, ${credentialId}, ${certificatePem}, ${encryptedKey}, ${'RSA'}, ${2048}, ${'SHA-256'}, ${'SCAL2'})
-    ON CONFLICT (credential_id) DO UPDATE SET
-      certificate_pem = ${certificatePem}, private_key_pem_encrypted = ${encryptedKey}, updated_at = NOW()`;
-  console.log(`Credential created: ${credentialId}`);
+    await sql`
+      INSERT INTO credentials (tenant_id, credential_id, label, certificate_pem, private_key_pem_encrypted, key_algorithm, key_length, hash_algorithm, scal, status)
+      VALUES (${tenantId}, ${cfg.id}, ${cfg.label}, ${certificatePem}, ${encryptedKey}, ${'RSA'}, ${2048}, ${'SHA-256'}, ${'SCAL2'}, ${cfg.status})
+      ON CONFLICT (credential_id) DO UPDATE SET
+        label = ${cfg.label},
+        certificate_pem = ${certificatePem},
+        private_key_pem_encrypted = ${encryptedKey},
+        status = ${cfg.status},
+        updated_at = NOW()`;
+    console.log(`  ${cfg.id} (${cfg.label}) — ${cfg.status}`);
+  }
 
   console.log('');
-  console.log('Add these to your .env.local for testing:');
-  console.log(`DEMO_CLIENT_ID=${clientId}`);
+  console.log('Add these to your .env.local for the landing page demo:');
+  console.log(`DEMO_CLIENT_ID=${CLIENT_ID}`);
   console.log(`DEMO_CLIENT_SECRET=${clientSecret}`);
   console.log(`DEMO_PIN=${pin}`);
-  console.log(`DEMO_CREDENTIAL_ID=${credentialId}`);
+  console.log(`DEMO_CREDENTIAL_ID=${CREDENTIAL_CONFIGS[0].id}`);
 }
 
 seed().catch(console.error);

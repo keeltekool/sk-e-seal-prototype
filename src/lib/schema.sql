@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS credentials (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   credential_id TEXT UNIQUE NOT NULL,
+  label TEXT,
   certificate_pem TEXT NOT NULL,
   certificate_chain_pem TEXT,
   private_key_pem_encrypted TEXT NOT NULL,
@@ -51,6 +52,9 @@ CREATE TABLE IF NOT EXISTS sad_tokens (
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Migrations for existing tables
+ALTER TABLE credentials ADD COLUMN IF NOT EXISTS label TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_credentials_tenant ON credentials(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_audit_tenant ON audit_log(tenant_id);
