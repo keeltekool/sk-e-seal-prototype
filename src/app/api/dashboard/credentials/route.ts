@@ -20,15 +20,16 @@ export async function GET() {
   const sql = neon(process.env.DATABASE_URL!);
 
   const tenant = await sql`SELECT id FROM tenants WHERE client_id = ${DEMO_CLIENT_ID} LIMIT 1`;
-  if (tenant.length === 0) {
+  if (tenant.length === 0 || !tenant[0]) {
     return Response.json({ error: 'Demo tenant not found' }, { status: 404 });
   }
+  const tenantId = tenant[0].id;
 
   const credentials = await sql`
     SELECT credential_id, label, certificate_pem, key_algorithm, key_length,
            hash_algorithm, scal, status, created_at
     FROM credentials
-    WHERE tenant_id = ${tenant[0].id}
+    WHERE tenant_id = ${tenantId}
     ORDER BY created_at`;
 
   const enriched = credentials.map(cred => {

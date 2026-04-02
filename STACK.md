@@ -1,14 +1,14 @@
-# SK E-Seal Prototype — STACK.md
+# E-Seal Prototype — STACK.md
 
-> CSC v2 compliant remote e-sealing service prototype for SK ID Solutions initiative.
-> Last updated: 2026-03-29
+> CSC v2 compliant remote e-sealing service prototype.
+> Last updated: 2026-03-31
 
 ## Services
 
 | Service | Purpose | Env Var(s) |
 |---------|---------|------------|
 | Neon PostgreSQL | Tenants, credentials, audit log, SAD tokens | `DATABASE_URL` |
-| FreeTSA.org | RFC 3161 timestamps (PAdES B-T) | *(hardcoded default, configurable via `tsaUrl`)* |
+| Sectigo Qualified TSA | RFC 3161 timestamps (EU Trusted List, QTSA) | *(hardcoded default, configurable via `tsaUrl`)* |
 | Vercel | Hosting + serverless API routes | *(auto)* |
 
 Env vars stored in: Vercel (6 vars), `.env.local` (local dev)
@@ -17,9 +17,9 @@ Additional env vars: `JWT_SECRET`, `DEMO_CLIENT_ID`, `DEMO_CLIENT_SECRET`, `DEMO
 
 ## Brand
 
-Primary: `#f12f00` (SK orange-red), Surface: `#fbf9f7`, On-surface: `#1b1c1b`
+Primary: `#f12f00` (orange-red), Surface: `#fbf9f7`, On-surface: `#1b1c1b`
 Fonts: Space Grotesk (headlines), Inter (body)
-Design system: SK "Technical Editorial" — tonal layering, no shadows, no borders
+Design system: "Technical Editorial" — tonal layering, no shadows, no borders
 
 ## Gotchas
 
@@ -28,6 +28,20 @@ Design system: SK "Technical Editorial" — tonal layering, no shadows, no borde
 | `@signpdf/*` deps not found on Vercel | Hoist to root `package.json` — Vercel doesn't install sub-package deps |
 | CMS signing: must sign SignedAttributes hash, NOT raw PDF hash | `hash.ts` builds DER SignedAttributes with pdfHash as messageDigest, then hashes that |
 | `Buffer` not assignable to `BodyInit` in timestamp.ts | Wrap with `new Uint8Array(buffer)` for fetch body |
+| CMS serial number overflow (32-bit) | Use `forge.util.hexToBytes()` directly, not `parseInt + integerToDer` |
+| SSE stream: final event lost in buffer | Process remaining buffer after `done === true` loop exit |
+| Vercel env vars get trailing newline | Use `echo -n "value"` not `echo "value"` when adding via CLI |
+| EU DSS shows PKCS7-T not PAdES | Must use SubFilter `ETSI.CAdES.detached` + ESS `signing-certificate-v2` attribute |
+
+## EU DSS Validation Status
+
+| Check | Result |
+|-------|--------|
+| Signature format | PAdES-BES |
+| Timestamp (QTSA) | PASSED — Sectigo Qualified (EU Trusted List) |
+| ESS signing-certificate-v2 | Present |
+| SubFilter | ETSI.CAdES.detached |
+| Signing cert | INDETERMINATE — self-signed (cert swap → TOTAL_PASSED) |
 
 ## Deployment
 
@@ -41,8 +55,9 @@ npx tsx scripts/seal-demo.ts FILE.pdf    # CLI seal test
 
 ## Post-Deploy Smoke Tests
 
-1. Load landing page — hero, navbar, sections render with SK branding
+1. Load landing page — hero, navbar, sections render with branding
 2. Scroll to demo — upload a PDF, watch Process X-Ray steps stream
 3. Download sealed PDF — verify file downloads
-4. Open `/docs` — Swagger UI loads with all 6 endpoints
-5. Check console — no JS errors
+4. Upload sealed PDF to EU DSS validator — check PAdES-BES format, QTSA timestamp PASSED
+5. Open `/docs` — Swagger UI loads with all 6 endpoints
+6. Check console — no JS errors
